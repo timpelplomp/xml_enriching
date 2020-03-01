@@ -2,13 +2,6 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 import spacy
 
-# python -m spacy download en_core_web_sm
-xml_path = Path("input/test.xml")
-
-soup = BeautifulSoup(xml_path.read_text(encoding="utf-8"), 'html.parser')
-print(soup.prettify())
-
-nlp = spacy.load("en_core_web_sm")
 
 # example_sent = "Apple is looking at buying U.K. startup for $1 billion"
 # doc = nlp(example_sent)
@@ -18,6 +11,8 @@ nlp = spacy.load("en_core_web_sm")
 #     altered_sent = altered_sent.replace(ent.text, xml_string)
 # print(example_sent)
 # print(altered_sent)
+
+nlp = spacy.load("en_core_web_sm")
 
 
 def annotate_text_ner(plaintext):
@@ -31,12 +26,24 @@ def annotate_text_ner(plaintext):
     return altered_text
 
 
-for text in soup.find_all("text"):
-    # print(text)
-    annotated_text = annotate_text_ner(str(text))
-    # print(annotated_text)
-    new_soup = BeautifulSoup(annotated_text, features="html.parser")
-    text.replace_with(new_soup)
+def alter_soup(soup):
+    print(soup.prettify())
+    for text in soup.find_all("text"):
+        # print(text)
+        annotated_text = annotate_text_ner(str(text))
+        # print(annotated_text)
+        new_soup = BeautifulSoup(annotated_text, features="html.parser")
+        text.replace_with(new_soup)
+    return soup
 
-print("NEW")
-print(soup)
+
+def wrap():
+    # python -m spacy download en_core_web_sm
+    xml_path = Path("input/test.xml")
+
+    soup = BeautifulSoup(xml_path.read_text(encoding="utf-8"), 'html.parser')
+    alter_soup(soup)
+    Path("output/" + xml_path.stem + "_output.xml").write_text(soup.prettify(), encoding="utf-8")
+
+
+wrap()
